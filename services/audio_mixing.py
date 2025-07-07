@@ -51,16 +51,17 @@ def process_audio_mixing(video_url, audio_url, video_vol, audio_vol, output_leng
     if output_length == 'audio' and audio_duration > video_duration:
         cmd.extend(['-stream_loop', '-1'])  # Loop video only if output_length is 'audio' and audio is longer
 
-    # Audio settings
-    audio_filter = f'[1:a]volume={audio_vol/100}'
-    if output_length == 'video':
-        audio_filter += f',atrim=duration={video_duration}'
-    audio_filter += '[a]'
-    cmd.extend(['-filter_complex', audio_filter])
-
+    # Audio mixing: adjust both audio sources and mix them
+    filter_complex = (
+        f"[0:a]volume={video_vol/100}[voice];"
+        f"[1:a]volume={audio_vol/100}[music];"
+        f"[voice][music]amix=inputs=2:duration=first:dropout_transition=2[aout]"
+    )
+    cmd.extend(['-filter_complex', filter_complex])
+    
     # Output settings
-    cmd.extend(['-map', '0:v'])  # Map video from first input
-    cmd.extend(['-map', '[a]'])  # Map processed audio
+    cmd.extend(['-map', '0:v'])    # Keep original video
+    cmd.extend(['-map', '[aout]']) # Use mixed audio output
 
 
     if output_length == 'audio' and audio_duration > video_duration:
