@@ -62,6 +62,7 @@ def process_audio_mixing(video_url, audio_url, video_vol, audio_vol, output_leng
     cmd.extend(['-map', '0:v'])  # Map video from first input
     cmd.extend(['-map', '[a]'])  # Map processed audio
 
+
     if output_length == 'audio' and audio_duration > video_duration:
         cmd.extend(['-c:v', 'libx264'])  # Re-encode video if looping
     else:
